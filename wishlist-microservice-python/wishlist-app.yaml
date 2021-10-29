@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  "wishlist-app"
+  namespace: newapp
+  labels:
+    app:  "wishlist-app"
+spec:
+  selector:
+    matchLabels:
+      app: "wishlist-app"
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app:  "wishlist-app"
+    spec:
+      containers:
+      - name:  "wishlist-app"
+        image:  subodhgholap/wishlist-app:latest
+        ports:
+        - containerPort:  5000
+          name:  "wishlist-app"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: wishlist
+  namespace: newapp
+spec:
+  selector:
+    app: "wishlist-app"
+  type: ClusterIP
+  ports:
+  - name: wishlist
+    protocol: TCP
+    port: 1003
+    targetPort: 5000 
+

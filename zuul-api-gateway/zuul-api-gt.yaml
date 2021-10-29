@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  "zuul-api-gt"
+  namespace: newapp
+  labels:
+    app:  "zuul-api-gt"
+spec:
+  selector:
+    matchLabels:
+      app: "zuul-api-gt"
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app:  "zuul-api-gt"
+    spec:
+      containers:
+      - name:  "zuul-api-gt"
+        image:  subodhgholap/zuul-gateway-app:latest
+        ports:
+        - containerPort:  9999
+          name:  "zuul-api-gt"
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - react-ui
+            topologyKey: "kubernetes.io/hostname"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: "zuul-service"
+  namespace: newapp
+spec:
+  selector:
+    app: "zuul-api-gt"
+  type: NodePort 
+  ports:
+  - name: "zuul-service"
+    port: 9999
+    targetPort: 9999
+    nodePort: 32470
